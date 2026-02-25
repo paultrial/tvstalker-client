@@ -1,0 +1,10 @@
+.page {
+  display: grid;
+  gap: 12px;
+}
+
+a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}

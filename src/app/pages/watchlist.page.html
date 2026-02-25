@@ -1,0 +1,18 @@
+<section class="page">
+  <h1>Your watchlist</h1>
+  <p class="muted">Everything you have added so far.</p>
+
+  <div class="list" *ngIf="shows().length; else empty">
+    <article class="show" *ngFor="let show of shows()">
+      <div>
+        <h3>{{ show.name }}</h3>
+        <p>{{ show.status || 'Status unknown' }}</p>
+      </div>
+      <button (click)="remove(show)">Remove</button>
+    </article>
+  </div>
+
+  <ng-template #empty>
+    <p class="muted">No shows yet. Add some from the search page.</p>
+  </ng-template>
+</section>

@@ -1,0 +1,14 @@
+<section class="page">
+  <h1>Password recovery</h1>
+  <p class="muted">We will send a reset link to your email.</p>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Email
+      <input type="email" formControlName="email" placeholder="you@example.com" />
+    </label>
+    <button type="submit">Send link</button>
+  </form>
+
+  <p class="message" *ngIf="message()">{{ message() }}</p>
+</section>

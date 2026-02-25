@@ -1,0 +1,20 @@
+<section class="page">
+  <h1>Profile</h1>
+  <p class="muted" *ngIf="user()">Logged in as {{ user()?.username }} ({{ user()?.email }})</p>
+
+  <div class="panel">
+    <h2>Update Filelist passkey</h2>
+    <form [formGroup]="passkeyForm" (ngSubmit)="updatePasskey()">
+      <label>
+        New passkey
+        <input type="text" formControlName="passKey" placeholder="Enter new passkey" />
+      </label>
+      <label>
+        Confirm with password
+        <input type="password" formControlName="password" placeholder="Password" />
+      </label>
+      <button type="submit">Update</button>
+    </form>
+    <p class="message" *ngIf="message()">{{ message() }}</p>
+  </div>
+</section>

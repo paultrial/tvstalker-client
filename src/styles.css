@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:wght@400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #060b12;
+  --panel: rgba(13, 21, 30, 0.85);
+  --text: #f5f3ee;
+  --muted: #a4b0be;
+  --accent: #ffb347;
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Newsreader', serif;
+  color: var(--text);
+  background: radial-gradient(circle at top left, #10223a 0%, #060b12 45%),
+    radial-gradient(circle at 20% 120%, #1c0f2e 0%, transparent 60%);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font-family: 'Space Grotesk', sans-serif;
+}

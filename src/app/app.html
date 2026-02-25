@@ -1,0 +1,19 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">Seriale</div>
+    <nav class="nav-links" *ngIf="auth.isLoggedIn()">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a routerLink="/watchlist" routerLinkActive="active">Watchlist</a>
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+    </nav>
+    <div class="user-area">
+      <span *ngIf="auth.user() as user">{{ user.username }}</span>
+      <button *ngIf="auth.isLoggedIn()" (click)="logout()">Logout</button>
+      <a *ngIf="!auth.isLoggedIn()" routerLink="/login">Login</a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>

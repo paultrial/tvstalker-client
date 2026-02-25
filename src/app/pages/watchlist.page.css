@@ -1,0 +1,36 @@
+.page {
+  display: grid;
+  gap: 12px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.show {
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.show h3 {
+  margin: 0 0 4px;
+}
+
+button {
+  border: none;
+  background: var(--accent);
+  color: #1a1a1a;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}

@@ -1,0 +1,53 @@
+<section class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-hero">
+      <h1>Seriale</h1>
+      <p>Track the shows you love. Stay ahead of the next episode.</p>
+      <div class="auth-links">
+        <a routerLink="/pass-recover">Forgot password?</a>
+      </div>
+    </div>
+
+    <div class="auth-forms">
+      <div class="form-block">
+        <h2>Sign in</h2>
+        <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+          <label>
+            Username
+            <input type="text" formControlName="username" placeholder="e.g. watcher42" />
+          </label>
+          <label>
+            Password
+            <input type="password" formControlName="password" placeholder="Your password" />
+          </label>
+          <button type="submit" [disabled]="loading()">Log in</button>
+        </form>
+      </div>
+
+      <div class="form-block">
+        <h2>Create account</h2>
+        <form [formGroup]="signupForm" (ngSubmit)="submitSignup()">
+          <label>
+            Username
+            <input type="text" formControlName="username" placeholder="Pick a username" />
+          </label>
+          <label>
+            Email
+            <input type="email" formControlName="email" placeholder="you@example.com" />
+          </label>
+          <label>
+            Password
+            <input type="password" formControlName="password" placeholder="Create a password" />
+          </label>
+          <label>
+            Filelist passkey (optional)
+            <input type="text" formControlName="passkey" placeholder="Your FL passkey" />
+          </label>
+          <button type="submit" [disabled]="loading()">Sign up</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <p class="auth-error" *ngIf="error()">{{ error() }}</p>
+</section>
