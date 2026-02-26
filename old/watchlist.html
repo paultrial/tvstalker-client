@@ -1,0 +1,120 @@
+<div ng-include="'../Views/header.html'"></div>
+<div style='padding-bottom: 55px' class="container">
+	<!-- <div class="userData">{{user.username}}
+	    <div class="logout"><p ng-click="logout()">Logout</p></div>
+	    <div class="logout"><a href="/#/watchlist">Edit Watchlist</a></div>
+	</div> -->
+	<div class="row">
+		<h2>Watchlist</h2>
+	</div>
+
+	<div class="row">
+		<div class="row">
+			<div class="col-xs-1 gridHeader">#</div>
+			<div class="col-xs-6 gridHeader">Series</div>
+			<div class="col-xs-2 gridHeader">Status</div>
+			<div class="col-xs-1 gridHeader">Info</div>
+			<div class="col-xs-2 gridHeader">Actions</div>
+		</div>
+		<div class="watchseriesRow row" ng-repeat="series in watchlistDetailed">
+			<div class="col-xs-1">{{$index + 1}}</div>
+			<div class="col-xs-6">{{series.name}} <span ng-if="series.network">({{series.network.country.code}})</span></div>
+			<div class="col-xs-2">{{series.status}}</div>
+			<div class="col-xs-1" ng-click="getmoreinfo(series.id)">
+				<span class="clickable glyphicon glyphicon glyphicon-info-sign"></span>
+			</div>
+			<div class="clickable col-xs-2" ng-click="removeSeries(series.id, $index)">
+				Remove <span class="glyphicon glyphicon glyphicon-remove"></span>
+			</div>
+		</div>
+	</div>
+
+	<br />
+	<br />
+	<br />
+
+	<div class="row">
+		<span ng-init="topTen = false" ng-click="topTen = topTen ? false : true" class="topTen clickable">See top ten</span>
+	</div>
+	<div class="row topTenList" ng-show="topTen">
+		<h3>Top Ten Most Watched Series</h3>
+		<div class="row">
+			<div class="col-xs-1 gridHeader">Count</div>
+			<div class="col-xs-7 gridHeader">Series</div>
+			<div class="col-xs-1 gridHeader">Info</div>
+			<div class="col-xs-2 gridHeader">Actions</div>
+		</div>
+		<div class="row watchseriesRow" ng-repeat="serie in tenMostWatched">
+			<div class="col-xs-1">{{serie.count}}</div>
+			<div class="col-xs-7">{{serie.name}}</div>
+			<div class="col-xs-1" ng-click="getmoreinfo(serie.id)">
+				<span class="clickable glyphicon glyphicon glyphicon-info-sign"></span>
+			</div>
+			<div class="clickable col-xs-2" ng-click="GetOneSeries(serie.name)">
+				Search <span class="glyphicon glyphicon glyphicon-search"></span>
+			</div>
+		</div>
+	</div>
+
+	<!-- search -->
+
+	<br />
+	<br />
+	<div class="row">
+	    <form ng-submit="GetOneSeries(seriesQuery)" class="col-sm-5 input-group input-group-xs" >
+			<div class="input-group">
+		      <input type="text" class="form-control" ng-model="seriesQuery" placeholder="Search Query">
+		      <div class="clickable input-group-addon"  ng-disabled="!seriesQuery" ng-click="GetOneSeries(seriesQuery)"> <span class="glyphicon glyphicon-search"></span> </div>
+		    </div>
+	    </form>
+	    <br />
+	    <div ng-show="!!ser">
+	        <div class="watchseriesRow row" ng-repeat="item in ser">
+	        	<div class="col-xs-1">{{$index +1}}</div>
+	        	<div class="col-xs-7">{{item.name}} ({{item.network.country.code}}) - <span ng-if="item.premieredYear">{{item.premieredYear}}</span></div>
+				<div class="col-xs-1" ></div>
+	        	<div class="clickable col-xs-1" ng-click="getmoreinfo(item.id)">
+					<span class="glyphicon glyphicon glyphicon-info-sign"></span>
+				</div>
+	        	<div class="clickable col-xs-2" ng-show="item.addable" ng-click="addSeries(item.id, $index)">Add <span class="glyphicon glyphicon-ok"></span></div>
+	        </div>
+	    </div>
+	</div>
+</div>
+
+<div class="row moreInfoOverlay" ng-show="!!moreInfoShow">
+	<div class="inchide" ng-click="moreInfoShow = false"> <span class="glyphicon glyphicon-remove"></span> </div>
+	<div class="col-md-4">
+		<img class="col-md-12" ng-src="{{moreInfoShow.image.medium}}" alt="img" />
+	</div>
+	<div class="col-md-4">
+		<div class="row">
+			<h3>{{moreInfoShow.name}}</h3>
+		</div>
+		<div class="row">
+			<p>Airday - {{moreInfoShow.schedule.days[0]}}</p>
+			<p>Airtime - {{moreInfoShow.schedule.time}}</p>
+			<p>Classification - {{moreInfoShow.type}}</p>
+			<p>Network - {{moreInfoShow.network.name}}</p>
+			<p>Country - {{moreInfoShow.network.country.name}}</p>
+			<p>Timezone - {{moreInfoShow.network.country.timezone}}</p>
+			<!-- <p>Seasons - {{moreInfoShow.seasons}}</p> -->
+			<a href="{{moreInfoShow.url}}" target="_blank">Show Link (TV Maze)</a>
+		</div>
+	</div>
+	<div class="col-md-3">
+		<p>Startdate - {{moreInfoShow.premiered}}</p>
+		<!-- <p>Started - {{moreInfoShow.started[0]}}</p> -->
+		<p>Status - {{moreInfoShow.status}}</p>
+	</div>
+	<!-- <div class="col-md-4"> -->
+	<!-- <p>{{moreInfoShow.ended[0]}}</p>
+	<p>{{moreInfoShow.genres[0]}}</p>
+	<p>{{moreInfoShow.origin_country[0]}}</p>
+	<p>{{moreInfoShow.runtime[0]}}</p>
+	<p>{{moreInfoShow.showid[0]}}</p> -->
+
+	<!-- </div> -->
+</div>
+
+<div ng-include="'../Views/footer.html'"></div>

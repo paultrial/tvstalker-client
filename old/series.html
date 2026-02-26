@@ -1,0 +1,127 @@
+<div ng-include="'../Views/header.html'"></div>
+
+
+
+<div style="padding-bottom: 55px" class="container-fluid">
+    <div class="row">
+        <div class="hidden-xs col-sm-4">
+            <h1>Latest Filelist Series</h1>
+            <form ng-submit="GetFlForSerie(FLQUERIE)">
+                <div class="input-group input-group-sm">
+                    <input autofocus="autofocus" class="input-sm form-control" type="text" ng-model="FLQUERIE">
+                    <div class="clickable input-group-addon" title="Search" ng-click="GetFlForSerie(FLQUERIE)"> <span
+                            class="glyphicon glyphicon-search"></span></div>
+                    <div class="clickable input-group-addon" title="Clear search"
+                        ng-click="RARBGQuery = false; flsQuery = false; FLQUERIE = ''"> <span
+                            class="glyphicon glyphicon-remove"></span></div>
+                </div>
+            </form>
+            <ul class="torrentFeed" ng-switch on="!!flsQuery">
+                <li ng-switch-when="false" ng-repeat="item in fls">
+                    <a href="{{item.webLink}}" title="{{item.viewableDate}} --- {{item.descr}}"
+                        target="_blank">{{item.title}}</a>
+                </li>
+
+                <li ng-switch-when="true" ng-repeat="item in flsQuery">
+                    <a href="{{item.webLink}}" title="{{item.viewableDate}} --- {{item.descr}}"
+                        target="_blank">{{item.title}}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-4">
+            <div class="row">
+                <h1>Your Series</h1>
+            </div>
+            <div class="row headerRow">
+                <div class="col-xs-2 text-center">Day</div>
+                <div class="col-xs-6 text-center">Series</div>
+                <div class="col-xs-2 text-center">Subtitles</div>
+                <div class="col-xs-2 text-center">RarBGLink</div>
+            </div>
+            <div class="row weekday" ng-repeat="row in runningSeries" ng-class="row.name">
+                <div class="col-xs-2 text-center" style="line-height: {{row.values.length * 20}}px">{{row.name}}</div>
+                <div class="col-xs-10 text-center">
+                    <div class="row seriesRow" ng-repeat="item in row.values">
+                        <span class="SeriesExpander glyphicon glyphicon-zoom-in"
+                            title="filter the two side lists by '{{item.name}}'" ng-click="GetFlForSerie(item.name)">
+                        </span>
+                        <div class="col-xs-8" ng-switch on="!!item.link">
+                            <!-- <span><a ng-if="item.data.hasNextEpisode" target="_blank" href="{{item.data._links.nextepisode.href}}">###</a></span> -->
+                            <a ng-switch-when="true" title="{{item.FLlinkTitle}}" href="{{item.link}}">
+                                {{item.name}} <span ng-if="item.data.hasNextEpisode" ng-click="getNextEp(item)">^^^</span>
+                            </a>
+                            <p ng-switch-when="false">
+                                {{item.name}} <span ng-if="item.data.hasNextEpisode" ng-click="getNextEp(item)">^^^</span>
+                            </p>
+                        </div>
+                        <span class="hidden-xs col-xs-1 searchForSub" ng-click="searchForSub(item)">sub</span>
+                        <span class="col-xs-3" title="{{item.linkTitle}}" ng-hide="!item.altLink">
+                            <a href="{{item.altLink}}">
+                                <p>rarBGLink</p>
+                            </a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <form ng-submit="searchForSubString(subQuery)" class="col-sm-5 input-group input-group-xs">
+                <div class="input-group">
+                    <input type="text" class="form-control" ng-model="subQuery" placeholder="Subtitle search">
+                    <div class="clickable input-group-addon" ng-disabled="!subQuery"
+                        ng-click="searchForSubString(subQuery)"> <span class="glyphicon glyphicon-search"></span> </div>
+                </div>
+            </form>
+        </div>
+        <div class="hidden-xs col-md-4">
+            <h1>Latest RarBG Series</h1>
+            <!-- RARBGQuery -->
+
+            <form ng-submit="GetFlForSerie(FLQUERIE)">
+                <div class="input-group input-group-sm">
+                    <input autofocus="autofocus" class="input-sm form-control" type="text" ng-model="FLQUERIE">
+                    <div class="clickable input-group-addon" title="Search" ng-click="GetFlForSerie(FLQUERIE)"> <span
+                            class="glyphicon glyphicon-search"></span></div>
+                    <div class="clickable input-group-addon" title="Clear search"
+                        ng-click="flsQuery = false; RARBGQuery = false; FLQUERIE = ''"> <span
+                            class="glyphicon glyphicon-remove"></span></div>
+                </div>
+            </form>
+            <ul class="torrentFeed">
+                <div ng-switch on="!!RARBGQuery">
+                    <li ng-switch-when="false" ng-repeat="item in rarBGs">
+                        <a href="{{item.webLink}}" title="{{item.viewableDate}}" target="_blank">{{item.title}}</a>
+                    </li>
+                    <li ng-switch-when="true" ng-repeat="item in RARBGQuery">
+                        <a href="{{item.webLink}}" title="{{item.viewableDate}}" target="_blank">{{item.title}}</a>
+                    </li>
+
+                </div>
+            </ul>
+        </div>
+    </div>
+</div><!-- end of container -->
+
+<div class="subtitlesPopup">
+    <a href="{{sub.ZipDownloadLink}}" target="_blank" ng-repeat="sub in subtitles" class="subtitle">
+        {{sub.MovieReleaseName}}
+    </a>
+</div>
+
+<div class="nextEpPopUp">
+    <!-- {{nextEpData | json:18}} -->
+    <img ng-src="{{nextEpData.image.medium}}" alt="nextEpData.image.medium">
+
+    <p><strong>Season:</strong> {{ nextEpData.season }}</p>
+    <p><strong>Episode Number:</strong> {{ nextEpData.number }}</p>
+    <p><strong>Air Date:</strong> {{ nextEpData.airdate }}</p>
+    <p><strong>Air Time:</strong> {{ nextEpData.airtime || 'N/A' }}</p>
+    <p><strong>Runtime:</strong> {{ nextEpData.runtime }} minutes</p>
+    <p><strong>Type:</strong> {{ nextEpData.type }}</p>
+    <p><strong>Rating:</strong> {{ nextEpData.rating.average || 'Not rated yet' }}</p>
+    <p><strong>Show:</strong> <a href="{{ nextEpData._links.show.href }}" target="_blank">{{ nextEpData._links.show.name
+            || 'Show Link' }}</a></p>
+    <p><strong>Episode URL:</strong> <a href="{{ nextEpData.url }}" target="_blank">{{ nextEpData.url }}</a></p>
+
+</div>
+
+<div ng-include="'../Views/footer.html'"></div>

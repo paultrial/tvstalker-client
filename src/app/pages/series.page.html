@@ -1,89 +1,112 @@
-<section class="page">
-  <div class="search-bar">
-    <div>
-      <h1>Your dashboard</h1>
-      <p>Search, track, and jump into the latest releases.</p>
+<section class="dashboard">
+  <div class="column side">
+    <header class="column-header">
+      <h2>Latest Filelist Series</h2>
+      <div class="filter-row">
+        <input
+          placeholder="Filter filelist"
+          (input)="filelistFilter.set($any($event.target).value)"
+        />
+        <button class="ghost" *ngIf="rssQuery()" (click)="clearRssFilter()">Clear</button>
+      </div>
+      <p class="context" *ngIf="rssQuery()">RSS results for "{{ rssQuery() }}"</p>
+    </header>
+    <ul class="rss-list">
+      <li *ngFor="let item of filteredFilelist()">
+        <a *ngIf="itemLink(item)" [href]="itemLink(item)" target="_blank" rel="noopener">
+          {{ itemTitle(item) }}
+        </a>
+        <span *ngIf="!itemLink(item)">{{ itemTitle(item) }}</span>
+      </li>
+    </ul>
+    <p class="empty" *ngIf="!filteredFilelist().length">No filelist items.</p>
+  </div>
+
+  <div class="column center">
+    <header class="column-header center-header">
+      <div>
+        <h2>Your Series</h2>
+        <p class="muted">Favorites grouped by air day.</p>
+      </div>
+      <div class="search-input">
+        <input [formControl]="searchControl" placeholder="Search series to add" />
+        <button (click)="search()" [disabled]="loading()">Search</button>
+      </div>
+    </header>
+
+    <div class="search-results" *ngIf="results().length">
+      <h3>Search results</h3>
+      <div class="result-list">
+        <article class="result-item" *ngFor="let show of results().slice(0, 8)">
+          <div>
+            <strong>{{ show.name }}</strong>
+            <span class="meta" *ngIf="show.genres?.length">{{ show.genres?.join(', ') }}</span>
+          </div>
+          <button (click)="toggleFavorite(show)">
+            {{ isFavorite(show.id) ? 'Remove' : 'Add' }}
+          </button>
+        </article>
+      </div>
     </div>
-    <div class="search-input">
-      <input [formControl]="searchControl" placeholder="Search for a series" />
-      <button (click)="search()" [disabled]="loading()">Search</button>
+
+    <div class="favorites" *ngIf="groupedFavorites().length; else emptyFavorites">
+      <div class="day-group" *ngFor="let group of groupedFavorites()">
+        <div class="day-label">{{ group.day }}</div>
+        <div class="day-rows">
+          <div class="series-row" *ngFor="let show of group.shows">
+            <div class="series-info">
+              <span class="series-name">{{ showTitle(show) }}</span>
+              <span class="series-meta" *ngIf="showMeta(show)">{{ showMeta(show) }}</span>
+            </div>
+            <button class="ghost" (click)="searchSubtitles(showTitle(show))">Sub</button>
+            <button class="ghost" (click)="searchRssFor(showTitle(show))">RSS</button>
+            <button class="danger" (click)="removeFavorite(show)">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template #emptyFavorites>
+      <p class="empty">No favorites yet. Add a show from search results.</p>
+    </ng-template>
+
+    <div class="subtitles" *ngIf="subtitleQuery()">
+      <div class="subtitles-header">
+        <h3>Subtitles for "{{ subtitleQuery() }}"</h3>
+        <button class="ghost" (click)="clearSubtitles()">Clear</button>
+      </div>
+      <p class="empty" *ngIf="subtitleLoading()">Loading subtitles...</p>
+      <ul class="subtitle-list" *ngIf="!subtitleLoading() && subtitleResults().length">
+        <li *ngFor="let item of subtitleResults()">
+          <a *ngIf="itemLink(item)" [href]="itemLink(item)" target="_blank" rel="noopener">
+            {{ itemTitle(item) }}
+          </a>
+          <span *ngIf="!itemLink(item)">{{ itemTitle(item) }}</span>
+        </li>
+      </ul>
+      <p class="empty" *ngIf="!subtitleLoading() && !subtitleResults().length">No subtitles found.</p>
     </div>
   </div>
 
-  <div class="grid">
-    <div class="panel">
-      <h2>Search results</h2>
-      <div class="card-list" *ngIf="results().length; else emptyResults">
-        <article class="show-card" *ngFor="let show of results()">
-          <div class="show-meta">
-            <h3>{{ show.name }}</h3>
-            <p>{{ show.genres?.join(', ') }}</p>
-          </div>
-          <button (click)="toggleFavorite(show)">
-            {{ isFavorite(show.id) ? 'Remove' : 'Add' }}
-          </button>
-        </article>
+  <div class="column side">
+    <header class="column-header">
+      <h2>Latest RARBG Series</h2>
+      <div class="filter-row">
+        <input
+          placeholder="Filter RARBG"
+          (input)="rarbgFilter.set($any($event.target).value)"
+        />
+        <button class="ghost" *ngIf="rssQuery()" (click)="clearRssFilter()">Clear</button>
       </div>
-      <ng-template #emptyResults>
-        <p class="empty">Search for a series to see results.</p>
-      </ng-template>
-    </div>
-
-    <div class="panel">
-      <h2>Your watchlist</h2>
-      <div class="card-list" *ngIf="watchlist().length; else emptyWatchlist">
-        <article class="show-card" *ngFor="let show of watchlist()">
-          <div class="show-meta">
-            <h3>{{ show.name }}</h3>
-            <p>{{ show.status || 'Unknown status' }}</p>
-          </div>
-          <button class="ghost" (click)="toggleFavorite(show)">Remove</button>
-        </article>
-      </div>
-      <ng-template #emptyWatchlist>
-        <p class="empty">No favorites yet. Add a show from search results.</p>
-      </ng-template>
-    </div>
-
-    <div class="panel">
-      <h2>Popular with the crew</h2>
-      <div class="card-list" *ngIf="popular().length; else emptyPopular">
-        <article class="show-card" *ngFor="let show of popular()">
-          <div class="show-meta">
-            <h3>{{ show.name }}</h3>
-            <p>{{ show.count }} watchers</p>
-          </div>
-          <button (click)="toggleFavorite(show)">
-            {{ isFavorite(show.id) ? 'Remove' : 'Add' }}
-          </button>
-        </article>
-      </div>
-      <ng-template #emptyPopular>
-        <p class="empty">No data yet.</p>
-      </ng-template>
-    </div>
-
-    <div class="panel">
-      <h2>Fresh releases</h2>
-      <div class="release-columns">
-        <div>
-          <h3>Filelist</h3>
-          <ul>
-            <li *ngFor="let item of recentFilelist().slice(0, 8)">
-              <span>{{ item.title }}</span>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h3>RARBG</h3>
-          <ul>
-            <li *ngFor="let item of recentRarbg().slice(0, 8)">
-              <span>{{ item.title }}</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <p class="empty" *ngIf="!recentFilelist().length && !recentRarbg().length">No recent releases.</p>
-    </div>
+      <p class="context" *ngIf="rssQuery()">RSS results for "{{ rssQuery() }}"</p>
+    </header>
+    <ul class="rss-list">
+      <li *ngFor="let item of filteredRarbg()">
+        <a *ngIf="itemLink(item)" [href]="itemLink(item)" target="_blank" rel="noopener">
+          {{ itemTitle(item) }}
+        </a>
+        <span *ngIf="!itemLink(item)">{{ itemTitle(item) }}</span>
+      </li>
+    </ul>
+    <p class="empty" *ngIf="!filteredRarbg().length">No RARBG items.</p>
   </div>
 </section>
