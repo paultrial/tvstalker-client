@@ -23,7 +23,7 @@
   </div>
 
   <div class="column center">
-    <header class="column-header center-header">
+    <!-- <header class="column-header center-header">
       <div>
         <h2>Your Series</h2>
         <p class="muted">Favorites grouped by air day.</p>
@@ -47,7 +47,7 @@
           </button>
         </article>
       </div>
-    </div>
+    </div> -->
 
     <div class="favorites" *ngIf="groupedFavorites().length; else emptyFavorites">
       <div class="day-group" *ngFor="let group of groupedFavorites()">
@@ -69,7 +69,13 @@
               Next ep
             </a>
             <button class="ghost" (click)="searchSubtitles(showTitle(show))">Sub</button>
-            <button class="ghost" (click)="searchRssFor(showTitle(show))">RSS</button>
+            <button class="ghost" (click)="searchRssFor(showTitle(show))" aria-label="Search RSS" title="Search...">
+              <svg class="icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
+                <path
+                  d="M21 20.3 16.7 16a7 7 0 1 0-.7.7L20.3 21 21 20.3zM10 16a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"
+                />
+              </svg>
+            </button>
             <!-- <button class="danger" (click)="removeFavorite(show)">Remove</button> -->
           </div>
         </div>

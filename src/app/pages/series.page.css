@@ -260,6 +260,13 @@
   letter-spacing: 0.05em;
 }
 
+.ghost .icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  display: block;
+}
+
 .empty {
   color: var(--muted);
   margin: 0;
