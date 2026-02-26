@@ -23,32 +23,6 @@
   </div>
 
   <div class="column center">
-    <!-- <header class="column-header center-header">
-      <div>
-        <h2>Your Series</h2>
-        <p class="muted">Favorites grouped by air day.</p>
-      </div>
-      <div class="search-input">
-        <input [formControl]="searchControl" placeholder="Search series to add" />
-        <button (click)="search()" [disabled]="loading()">Search</button>
-      </div>
-    </header>
-
-    <div class="search-results" *ngIf="results().length">
-      <h3>Search results</h3>
-      <div class="result-list">
-        <article class="result-item" *ngFor="let show of results().slice(0, 8)">
-          <div>
-            <strong>{{ show.name }}</strong>
-            <span class="meta" *ngIf="show.genres?.length">{{ show.genres?.join(', ') }}</span>
-          </div>
-          <button (click)="toggleFavorite(show)">
-            {{ isFavorite(show.id) ? 'Remove' : 'Add' }}
-          </button>
-        </article>
-      </div>
-    </div> -->
-
     <div class="favorites" *ngIf="groupedFavorites().length; else emptyFavorites">
       <div class="day-group" *ngFor="let group of groupedFavorites()">
         <div class="day-label">{{ group.day }}</div>

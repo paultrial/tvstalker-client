@@ -2,6 +2,27 @@
   <h1>Your watchlist</h1>
   <p class="muted">Everything you have added so far.</p>
 
+  <form class="search-input" (submit)="onSearchSubmit($event)">
+    <input [formControl]="searchControl" placeholder="Search series to add" />
+    <button type="submit" [disabled]="loading()">Search</button>
+  </form>
+
+  <div class="search-results" *ngIf="results().length">
+    <h3>Search results</h3>
+    <div class="result-list">
+      <article class="result-item" *ngFor="let show of results().slice(0, 8)">
+        <div>
+          <strong>{{ show.name }}</strong>
+          <span class="meta meta-primary" *ngIf="resultMeta(show) as meta">{{ meta }}</span>
+          <span class="meta meta-secondary" *ngIf="show.genres?.length">{{ show.genres?.join(', ') }}</span>
+        </div>
+        <button (click)="toggleFavorite(show)">
+          {{ isFavorite(show.id) ? 'Remove' : 'Add' }}
+        </button>
+      </article>
+    </div>
+  </div>
+
   <div class="list" *ngIf="shows().length; else empty">
     <article class="show" *ngFor="let show of shows()">
       <div>
@@ -13,6 +34,6 @@
   </div>
 
   <ng-template #empty>
-    <p class="muted">No shows yet. Add some from the search page.</p>
+    <p class="muted">No shows yet. Use search above to add some.</p>
   </ng-template>
 </section>
