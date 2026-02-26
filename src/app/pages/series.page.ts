@@ -35,6 +35,12 @@ export class SeriesPage implements OnInit {
   readonly groupedFavorites = computed(() => this.groupByDay(this.watchlist()));
   readonly filteredFilelist = computed(() => this.filterList(this.filelistItems(), this.filelistFilter()));
   readonly filteredRarbg = computed(() => this.filterList(this.rarbgItems(), this.rarbgFilter()));
+  readonly rssNormalizedTitles = computed(() => {
+    const items = [...this.filteredFilelist(), ...this.filteredRarbg()];
+    return items
+      .map((item) => this.normalizeTitle(this.itemTitle(item)))
+      .filter((title) => title.length);
+  });
 
   ngOnInit() {
     this.loadWatchlist();
@@ -196,10 +202,61 @@ export class SeriesPage implements OnInit {
     return item?.link || item?.url || item?.href || item?.download || item?.downloadLink;
   }
 
+  isInRss(show: any) {
+    const title = this.normalizeTitle(this.showTitle(show));
+    if (!title || title === 'unknown') return false;
+    const needle = ` ${title} `;
+    return this.rssNormalizedTitles().some((item) => ` ${item} `.includes(needle));
+  }
+
+  nextEpisodeLink(show: any) {
+    return (
+      show?.nextEpisode?.url ||
+      show?.nextEpisode?.link ||
+      show?.nextEpisode?.href ||
+      show?.nextEpisode?._links?.self?.href ||
+      show?._links?.nextepisode?.href ||
+      show?.links?.nextepisode?.href ||
+      show?.nextEpisodeUrl ||
+      show?.nextEpisodeLink ||
+      null
+    );
+  }
+
+  hasNextEpisode(show: any) {
+    return Boolean(
+      show?.nextEpisode ||
+        show?._links?.nextepisode ||
+        show?.links?.nextepisode ||
+        show?.nextEpisodeUrl ||
+        show?.nextEpisodeLink
+    );
+  }
+
+  showUri(show: any) {
+    return (
+      show?.uri ||
+      show?.url ||
+      show?.link ||
+      show?.href ||
+      show?._links?.self?.href ||
+      show?.links?.self?.href ||
+      null
+    );
+  }
+
   private filterList(list: any[], filter: string) {
     const term = filter.trim().toLowerCase();
     if (!term) return list;
     return list.filter((item) => this.itemTitle(item).toLowerCase().includes(term));
+  }
+
+  private normalizeTitle(value: string) {
+    return value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   private groupByDay(shows: any[]) {
@@ -259,7 +316,8 @@ export class SeriesPage implements OnInit {
 
     if (typeof candidate === 'number') {
       const byIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      return byIndex[candidate] || null;
+      const base = byIndex[candidate] || null;
+      return base ? this.offsetDay(base) : null;
     }
 
     if (typeof candidate !== 'string') return null;
@@ -270,7 +328,7 @@ export class SeriesPage implements OnInit {
     const asDate = new Date(trimmed);
     if (!Number.isNaN(asDate.getTime())) {
       const byIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      return byIndex[asDate.getDay()];
+      return this.offsetDay(byIndex[asDate.getDay()]);
     }
 
     const lower = trimmed.toLowerCase();
@@ -295,6 +353,22 @@ export class SeriesPage implements OnInit {
       sunday: 'Sunday'
     };
 
-    return map[lower] || null;
+    const base = map[lower] || null;
+    return base ? this.offsetDay(base) : null;
+  }
+
+  private offsetDay(day: string): string {
+    const ordered = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ];
+    const index = ordered.indexOf(day);
+    if (index === -1) return day;
+    return ordered[(index + 1) % ordered.length];
   }
 }

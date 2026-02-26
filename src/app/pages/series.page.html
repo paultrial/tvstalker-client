@@ -53,11 +53,21 @@
       <div class="day-group" *ngFor="let group of groupedFavorites()">
         <div class="day-label">{{ group.day }}</div>
         <div class="day-rows">
-          <div class="series-row" *ngFor="let show of group.shows">
-            <div class="series-info">
-              <span class="series-name">{{ showTitle(show) }}</span>
-              <span class="series-meta" *ngIf="showMeta(show)">{{ showMeta(show) }}</span>
+          <div class="series-row" *ngFor="let show of group.shows" [class.rss-hit]="isInRss(show)">
+            <div class="series-details">
+              <div class="series-info">
+                <span class="series-name">{{ showTitle(show) }}</span>
+              </div>
             </div>
+            <a
+              class="ghost"
+              *ngIf="hasNextEpisode(show) && showUri(show)"
+              [href]="showUri(show)"
+              target="_blank"
+              rel="noopener"
+            >
+              Next ep
+            </a>
             <button class="ghost" (click)="searchSubtitles(showTitle(show))">Sub</button>
             <button class="ghost" (click)="searchRssFor(showTitle(show))">RSS</button>
             <button class="danger" (click)="removeFavorite(show)">Remove</button>
