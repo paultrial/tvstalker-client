@@ -1,1 +1,1 @@
-export const API_BASE = 'https://tvstalker-server.onrender.com/api';
+export const API_BASE = 'http://localhost:3000/api';
