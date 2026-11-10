@@ -33,8 +33,22 @@ export class SeriesPage implements OnInit {
 
   readonly favorites = computed(() => this.auth.user()?.favorites || []);
   readonly groupedFavorites = computed(() => this.groupByDay(this.watchlist()));
-  readonly filteredFilelist = computed(() => this.filterList(this.filelistItems(), this.filelistFilter()));
-  readonly filteredRarbg = computed(() => this.filterList(this.rarbgItems(), this.rarbgFilter()));
+  readonly filteredFilelist = computed(() => {
+    const list = this.filterList(this.filelistItems(), this.filelistFilter());
+    return [...list].sort((a, b) => {
+      const timeA = a?.time || a?.date || a?.created_at || a?.added || 0;
+      const timeB = b?.time || b?.date || b?.created_at || b?.added || 0;
+      return new Date(timeB).getTime() - new Date(timeA).getTime();
+    });
+  });
+  readonly filteredRarbg = computed(() => {
+    const list = this.filterList(this.rarbgItems(), this.rarbgFilter());
+    return [...list].sort((a, b) => {
+      const timeA = a?.time || a?.date || a?.created_at || a?.added || 0;
+      const timeB = b?.time || b?.date || b?.created_at || b?.added || 0;
+      return new Date(timeB).getTime() - new Date(timeA).getTime();
+    });
+  });
   readonly rssNormalizedTitles = computed(() => {
     const items = [...this.filteredFilelist(), ...this.filteredRarbg()];
     return items
@@ -195,11 +209,44 @@ export class SeriesPage implements OnInit {
   }
 
   itemTitle(item: any) {
-    return item?.title || item?.name || item?.filename || item?.release || item?.series || 'Untitled';
+    const title = item?.title || item?.name || item?.filename || item?.release || item?.series || 'Untitled';
+    const date = this.itemDate(item);
+    return date ? `${title} (${date})` : title;
+  }
+
+  itemDate(item: any) {
+    const time = item?.time || item?.date || item?.created_at || item?.added;
+    if (!time) return null;
+
+    const date = new Date(time);
+    if (isNaN(date.getTime())) return null;
+
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'just now';
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) return `${diffInWeeks} weeks ago`;
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths} months ago`;
+
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears} years ago`;
   }
 
   itemLink(item: any) {
-    return item?.link || item?.url || item?.href || item?.download || item?.downloadLink;
+    return item?.webLink || item?.link || item?.url || item?.href || item?.download || item?.downloadLink;
   }
 
   isInRss(show: any) {

@@ -12,69 +12,101 @@
       <p class="context" *ngIf="rssQuery()">RSS results for "{{ rssQuery() }}"</p>
     </header>
     <ul class="rss-list">
-      <li *ngFor="let item of filteredFilelist()">
-        <a *ngIf="itemLink(item)" [href]="itemLink(item)" target="_blank" rel="noopener">
-          {{ itemTitle(item) }}
-        </a>
-        <span *ngIf="!itemLink(item)">{{ itemTitle(item) }}</span>
-      </li>
+      @for (item of filteredFilelist(); track item._id || $index) {
+        <li title="{{ itemDate(item) }}">
+          @if (itemLink(item)) {
+            <a [href]="itemLink(item)" target="_blank" rel="noopener">
+              {{ itemTitle(item) }}
+            </a>
+          } @else {
+            <span>{{ itemTitle(item) }}</span>
+          }
+        </li>
+      }
     </ul>
-    <p class="empty" *ngIf="!filteredFilelist().length">No filelist items.</p>
+    @if (!filteredFilelist().length) {
+      <p class="empty">No filelist items.</p>
+    }
+
+
   </div>
 
   <div class="column center">
-    <div class="favorites" *ngIf="groupedFavorites().length; else emptyFavorites">
-      <div class="day-group" *ngFor="let group of groupedFavorites()">
-        <div class="day-label">{{ group.day }}</div>
-        <div class="day-rows">
-          <div class="series-row" *ngFor="let show of group.shows" [class.rss-hit]="isInRss(show)">
-            <div class="series-details">
-              <div class="series-info">
-                <span class="series-name">{{ showTitle(show) }}</span>
-              </div>
+    @if (groupedFavorites().length) {
+      <div class="favorites">
+        @for (group of groupedFavorites(); track group.day) {
+          <div class="day-group">
+            <div class="day-label">{{ group.day }}</div>
+            <div class="day-rows">
+              @for (show of group.shows; track show.id || $index) {
+                <div class="series-row" [class.rss-hit]="isInRss(show)">
+                  <div class="series-details">
+                    <div class="series-info">
+                      <span class="series-name">{{ showTitle(show) }}</span>
+                    </div>
+                  </div>
+                  @if (hasNextEpisode(show) && showUri(show)) {
+                    <a
+                      class="ghost"
+                      [href]="showUri(show)"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Next ep
+                    </a>
+                  }
+                  <button class="ghost" (click)="searchSubtitles(showTitle(show))">Sub</button>
+                  <button class="ghost" (click)="searchRssFor(showTitle(show))" aria-label="Search RSS" title="Search...">
+                    <svg class="icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
+                      <path
+                        d="M21 20.3 16.7 16a7 7 0 1 0-.7.7L20.3 21 21 20.3zM10 16a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"
+                      />
+                    </svg>
+                  </button>
+                  <!-- <button class="danger" (click)="removeFavorite(show)">Remove</button> -->
+                </div>
+              }
             </div>
-            <a
-              class="ghost"
-              *ngIf="hasNextEpisode(show) && showUri(show)"
-              [href]="showUri(show)"
-              target="_blank"
-              rel="noopener"
-            >
-              Next ep
-            </a>
-            <button class="ghost" (click)="searchSubtitles(showTitle(show))">Sub</button>
-            <button class="ghost" (click)="searchRssFor(showTitle(show))" aria-label="Search RSS" title="Search...">
-              <svg class="icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
-                <path
-                  d="M21 20.3 16.7 16a7 7 0 1 0-.7.7L20.3 21 21 20.3zM10 16a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"
-                />
-              </svg>
-            </button>
-            <!-- <button class="danger" (click)="removeFavorite(show)">Remove</button> -->
           </div>
-        </div>
+        }
       </div>
-    </div>
+    } @else {
+      <p class="empty">No favorites yet. Add a show from search results.</p>
+    }
+
     <ng-template #emptyFavorites>
       <p class="empty">No favorites yet. Add a show from search results.</p>
     </ng-template>
 
-    <div class="subtitles" *ngIf="subtitleQuery()">
-      <div class="subtitles-header">
-        <h3>Subtitles for "{{ subtitleQuery() }}"</h3>
-        <button class="ghost" (click)="clearSubtitles()">Clear</button>
+    @if (subtitleQuery()) {
+      <div class="subtitles">
+        <div class="subtitles-header">
+          <h3>Subtitles for "{{ subtitleQuery() }}"</h3>
+          <button class="ghost" (click)="clearSubtitles()">Clear</button>
+        </div>
+        @if (subtitleLoading()) {
+          <p class="empty">Loading subtitles...</p>
+        }
+        @if (!subtitleLoading() && subtitleResults().length) {
+          <ul class="subtitle-list">
+            @for (item of subtitleResults(); track item._id || $index) {
+              <li>
+                @if (itemLink(item)) {
+                  <a [href]="itemLink(item)" target="_blank" rel="noopener">
+                    {{ itemTitle(item) }}
+                  </a>
+                } @else {
+                  <span>{{ itemTitle(item) }}</span>
+                }
+              </li>
+            }
+          </ul>
+        }
+        @if (!subtitleLoading() && !subtitleResults().length) {
+          <p class="empty">No subtitles found.</p>
+        }
       </div>
-      <p class="empty" *ngIf="subtitleLoading()">Loading subtitles...</p>
-      <ul class="subtitle-list" *ngIf="!subtitleLoading() && subtitleResults().length">
-        <li *ngFor="let item of subtitleResults()">
-          <a *ngIf="itemLink(item)" [href]="itemLink(item)" target="_blank" rel="noopener">
-            {{ itemTitle(item) }}
-          </a>
-          <span *ngIf="!itemLink(item)">{{ itemTitle(item) }}</span>
-        </li>
-      </ul>
-      <p class="empty" *ngIf="!subtitleLoading() && !subtitleResults().length">No subtitles found.</p>
-    </div>
+    }
   </div>
 
   <div class="column side">
@@ -90,13 +122,23 @@
       <p class="context" *ngIf="rssQuery()">RSS results for "{{ rssQuery() }}"</p>
     </header>
     <ul class="rss-list">
-      <li *ngFor="let item of filteredRarbg()">
-        <a *ngIf="itemLink(item)" [href]="itemLink(item)" target="_blank" rel="noopener">
-          {{ itemTitle(item) }}
-        </a>
-        <span *ngIf="!itemLink(item)">{{ itemTitle(item) }}</span>
-      </li>
+      @for (item of filteredRarbg(); track item._id || $index) {
+        <li title="{{ itemDate(item) }}">
+          @if (itemLink(item)) {
+            <a [href]="itemLink(item)" target="_blank" rel="noopener">
+              {{ itemTitle(item) }}
+            </a>
+          } @else {
+            <span>{{ itemTitle(item) }}</span>
+          }
+        </li>
+      }
     </ul>
-    <p class="empty" *ngIf="!filteredRarbg().length">No RARBG items.</p>
+    @if (!filteredRarbg().length) {
+      <p class="empty">No RARBG items.</p>
+    }
+
+
   </div>
+
 </section>
