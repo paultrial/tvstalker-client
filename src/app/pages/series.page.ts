@@ -211,7 +211,8 @@ export class SeriesPage implements OnInit {
   itemTitle(item: any) {
     const title = item?.title || item?.name || item?.filename || item?.release || item?.series || 'Untitled';
     const date = this.itemDate(item);
-    return date ? `${title} (${date})` : title;
+    // return date ? `${title} (${date})` : title;
+    return title;
   }
 
   itemDate(item: any) {
