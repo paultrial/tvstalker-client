@@ -10,7 +10,7 @@ import { SeriesService } from '../core/series.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './series.page.html',
-  styleUrl: './series.page.css'
+  styleUrl: './series.page.css',
 })
 export class SeriesPage implements OnInit {
   private auth = inject(AuthService);
@@ -30,6 +30,7 @@ export class SeriesPage implements OnInit {
   readonly subtitleResults = signal<any[]>([]);
   readonly subtitleLoading = signal(false);
   readonly loading = signal(false);
+  readonly EP_MARKER = /\b(s\d{1,2}e\d{1,3}|\d{1,2}x\d{2,3})\b/i;
 
   readonly favorites = computed(() => this.auth.user()?.favorites || []);
   readonly groupedFavorites = computed(() => this.groupByDay(this.watchlist()));
@@ -69,7 +70,7 @@ export class SeriesPage implements OnInit {
     }
     this.series.userSeriesMoreInfo(ids).subscribe({
       next: (data) => this.watchlist.set(data || []),
-      error: () => this.watchlist.set([])
+      error: () => this.watchlist.set([]),
     });
   }
 
@@ -84,7 +85,7 @@ export class SeriesPage implements OnInit {
       error: () => {
         this.latestFilelist.set([]);
         if (!this.rssQuery()) this.filelistItems.set([]);
-      }
+      },
     });
     this.series.rarbgSince(twoDaysAgo).subscribe({
       next: (data) => {
@@ -95,7 +96,7 @@ export class SeriesPage implements OnInit {
       error: () => {
         this.latestRarbg.set([]);
         if (!this.rssQuery()) this.rarbgItems.set([]);
-      }
+      },
     });
   }
 
@@ -111,7 +112,7 @@ export class SeriesPage implements OnInit {
       error: () => {
         this.results.set([]);
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -128,14 +129,14 @@ export class SeriesPage implements OnInit {
         next: () => {
           this.auth.updateFavorites(undefined, id);
           this.loadWatchlist();
-        }
+        },
       });
     } else {
       this.series.addToSet(id).subscribe({
         next: () => {
           this.auth.updateFavorites(id, undefined);
           this.loadWatchlist();
-        }
+        },
       });
     }
   }
@@ -147,7 +148,7 @@ export class SeriesPage implements OnInit {
       next: () => {
         this.auth.updateFavorites(undefined, id);
         this.loadWatchlist();
-      }
+      },
     });
   }
 
@@ -157,7 +158,7 @@ export class SeriesPage implements OnInit {
     this.rssQuery.set(query);
     forkJoin({
       filelist: this.series.flForSerie(query),
-      rarbg: this.series.rarbgForSerie(query)
+      rarbg: this.series.rarbgForSerie(query),
     }).subscribe({
       next: ({ filelist, rarbg }) => {
         this.filelistItems.set(filelist || []);
@@ -166,7 +167,7 @@ export class SeriesPage implements OnInit {
       error: () => {
         this.filelistItems.set([]);
         this.rarbgItems.set([]);
-      }
+      },
     });
   }
 
@@ -189,7 +190,7 @@ export class SeriesPage implements OnInit {
       error: () => {
         this.subtitleResults.set([]);
         this.subtitleLoading.set(false);
-      }
+      },
     });
   }
 
@@ -209,7 +210,8 @@ export class SeriesPage implements OnInit {
   }
 
   itemTitle(item: any) {
-    const title = item?.title || item?.name || item?.filename || item?.release || item?.series || 'Untitled';
+    const title =
+      item?.title || item?.name || item?.filename || item?.release || item?.series || 'Untitled';
     const date = this.itemDate(item);
     // return date ? `${title} (${date})` : title;
     return title;
@@ -247,14 +249,21 @@ export class SeriesPage implements OnInit {
   }
 
   itemLink(item: any) {
-    return item?.webLink || item?.link || item?.url || item?.href || item?.download || item?.downloadLink;
+    return (
+      item?.webLink || item?.link || item?.url || item?.href || item?.download || item?.downloadLink
+    );
   }
 
   isInRss(show: any) {
     const title = this.normalizeTitle(this.showTitle(show));
     if (!title || title === 'unknown') return false;
-    const needle = ` ${title} `;
-    return this.rssNormalizedTitles().some((item) => ` ${item} `.includes(needle));
+
+    return this.rssNormalizedTitles().some((item) => {
+      // cut off at the season/episode marker, if present
+      const idx = item.search(this.EP_MARKER);
+      const showPart = (idx > 0 ? item.slice(0, idx) : item).trim();
+      return showPart === title || item.startsWith(title + ' ');
+    });
   }
 
   nextEpisodeLink(show: any) {
@@ -274,10 +283,10 @@ export class SeriesPage implements OnInit {
   hasNextEpisode(show: any) {
     return Boolean(
       show?.nextEpisode ||
-        show?._links?.nextepisode ||
-        show?.links?.nextepisode ||
-        show?.nextEpisodeUrl ||
-        show?.nextEpisodeLink
+      show?._links?.nextepisode ||
+      show?.links?.nextepisode ||
+      show?.nextEpisodeUrl ||
+      show?.nextEpisodeLink,
     );
   }
 
@@ -323,7 +332,7 @@ export class SeriesPage implements OnInit {
       'Friday',
       'Saturday',
       'Sunday',
-      'Unknown'
+      'Unknown',
     ];
 
     return ordered
@@ -344,7 +353,7 @@ export class SeriesPage implements OnInit {
       show?.airday,
       show?.weekday,
       show?.day,
-      show?.air?.day
+      show?.air?.day,
     ];
 
     for (const candidate of candidates) {
@@ -363,7 +372,15 @@ export class SeriesPage implements OnInit {
     }
 
     if (typeof candidate === 'number') {
-      const byIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const byIndex = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
       const base = byIndex[candidate] || null;
       return base ? this.offsetDay(base) : null;
     }
@@ -375,7 +392,15 @@ export class SeriesPage implements OnInit {
 
     const asDate = new Date(trimmed);
     if (!Number.isNaN(asDate.getTime())) {
-      const byIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const byIndex = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
       return this.offsetDay(byIndex[asDate.getDay()]);
     }
 
@@ -398,7 +423,7 @@ export class SeriesPage implements OnInit {
       sat: 'Saturday',
       saturday: 'Saturday',
       sun: 'Sunday',
-      sunday: 'Sunday'
+      sunday: 'Sunday',
     };
 
     const base = map[lower] || null;
@@ -406,15 +431,7 @@ export class SeriesPage implements OnInit {
   }
 
   private offsetDay(day: string): string {
-    const ordered = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday'
-    ];
+    const ordered = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const index = ordered.indexOf(day);
     if (index === -1) return day;
     return ordered[(index + 1) % ordered.length];
